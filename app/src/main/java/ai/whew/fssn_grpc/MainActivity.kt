@@ -15,5 +15,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
         binding.button1.setOnClickListener {
             startActivity(Intent(this, FirstActivity::class.java))
         }
+
+        binding.button2.setOnClickListener {
+            startActivity(Intent(this, SecondActivity::class.java))
+        }
     }
 }
