@@ -18,6 +18,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
+import serverstreaming.ServerStreamingGrpc
+import serverstreaming.Serverstreaming
 import java.lang.Exception
 import java.util.*
 
@@ -30,6 +32,7 @@ class GrpcTask {
     private val stub = MyServiceGrpc.newFutureStub(channel)
     private val bidirectionalStub = BidirectionalGrpc.newStub(channel)
     private val clientStub = ClientStreamingGrpc.newStub(channel)
+    private val serverStub = ServerStreamingGrpc.newBlockingStub(channel)
 
     fun myFunction(
         number: Int
@@ -58,6 +61,13 @@ class GrpcTask {
             requestObserver.onNext(Clientstreaming.ClientMessage.newBuilder().setMessage(message).build())
         }
         requestObserver.onCompleted()
+    }
+
+    fun startServerStreaming(num: Int) {
+        val response = serverStub.getServerResponse(Serverstreaming.ServerNumber.newBuilder().setValue(num).build())
+        response.forEach {
+            Log.d(TAG, "server streaming response : ${it.message}")
+        }
     }
 
 
@@ -93,6 +103,23 @@ class GrpcTask {
 
         override fun onCompleted() {
             Log.d(TAG, "client-side stream completed")
+        }
+
+    }
+
+    class ServerResponseStreamObserver: StreamObserver<Serverstreaming.ServerMessage> {
+        override fun onNext(value: Serverstreaming.ServerMessage?) {
+            value?.message?.let {
+                Log.d(TAG, "received message : $it")
+            }
+        }
+
+        override fun onError(t: Throwable?) {
+            Log.e(TAG, "error at server-side stream observer", t)
+        }
+
+        override fun onCompleted() {
+            Log.d(TAG, "server-side stream completed")
         }
 
     }
