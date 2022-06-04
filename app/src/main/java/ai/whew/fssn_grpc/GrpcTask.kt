@@ -5,6 +5,8 @@ import MyServiceGrpc
 import android.util.Log
 import bidirectional.BidirectionalGrpc
 import bidirectional.BidirectionalOuterClass
+import clientstreaming.ClientStreamingGrpc
+import clientstreaming.Clientstreaming
 import com.google.common.util.concurrent.ListenableFuture
 import io.grpc.ClientCall
 import io.grpc.ManagedChannel
@@ -27,6 +29,7 @@ class GrpcTask {
 
     private val stub = MyServiceGrpc.newFutureStub(channel)
     private val bidirectionalStub = BidirectionalGrpc.newStub(channel)
+    private val clientStub = ClientStreamingGrpc.newStub(channel)
 
     fun myFunction(
         number: Int
@@ -49,6 +52,14 @@ class GrpcTask {
         return BidirectionalOuterClass.Message.newBuilder().setMessage(message).build()
     }
 
+    fun sendClientStreamingMessage(messages: List<String>) {
+        val requestObserver = clientStub.getServerResponse(ClientResponseStreamObserver())
+        for (message in messages) {
+            requestObserver.onNext(Clientstreaming.ClientMessage.newBuilder().setMessage(message).build())
+        }
+        requestObserver.onCompleted()
+    }
+
 
     fun shutdown() {
         channel.shutdownNow()
@@ -65,6 +76,23 @@ class GrpcTask {
 
         override fun onCompleted() {
             Log.d(TAG, "bidirectional stream completed")
+        }
+
+    }
+
+    class ClientResponseStreamObserver: StreamObserver<Clientstreaming.Number> {
+        override fun onNext(value: Clientstreaming.Number?) {
+            value?.value?.let {
+                Log.d(TAG, "sum is $it")
+            }
+        }
+
+        override fun onError(t: Throwable?) {
+            Log.e(TAG, "error at client-side stream observer", t)
+        }
+
+        override fun onCompleted() {
+            Log.d(TAG, "client-side stream completed")
         }
 
     }
