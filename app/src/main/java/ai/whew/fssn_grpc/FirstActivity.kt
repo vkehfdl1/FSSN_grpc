@@ -19,19 +19,20 @@ class FirstActivity: AppCompatActivity(R.layout.activity_first) {
         setContentView(binding.root)
 
         task = GrpcTask()
-    }
 
-    override fun onResume() {
-        super.onResume()
-        val future = task.myFunction(10)
-        future.addListener({
-            try {
-                val reply = future.get(0, TimeUnit.SECONDS)
-                Toast.makeText(this, reply.value, Toast.LENGTH_SHORT).show()
-            } catch (e: ExecutionException) {
-                Log.e(TAG, "$e")
-            }
-        }, ContextCompat.getMainExecutor(this))
+        binding.button.setOnClickListener {
+            val future = task.myFunction(binding.editText.text.toString().toInt())
+            future.addListener({
+                try {
+                    val reply = future.get(0, TimeUnit.SECONDS)
+                    binding.resultTextView.post {
+                        binding.resultTextView.text = reply.value.toString()
+                    }
+                } catch (e: ExecutionException) {
+                    Log.e(TAG, "$e")
+                }
+            }, ContextCompat.getMainExecutor(this))
+        }
     }
 
     companion object {

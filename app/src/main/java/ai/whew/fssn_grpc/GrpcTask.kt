@@ -9,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 
 class GrpcTask {
-    private val channel: ManagedChannel = ManagedChannelBuilder.forAddress("localhost", 50051)
+    private val channel: ManagedChannel = ManagedChannelBuilder.forAddress("mkseoul.iptime.org", 6666)
         .usePlaintext()
         .executor(Dispatchers.IO.asExecutor())
         .build()
